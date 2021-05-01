@@ -1,10 +1,12 @@
 import datetime
 
 import pytest
-import twitch.utils as utils
-from twitch.queries import ClipInfo
 
-from twitch.user import User
+from twitch.src import utils as utils
+
+from twitch.src.queries import ClipInfo
+
+from twitch.src.user import User
 
 
 @pytest.mark.parametrize('login, expected',

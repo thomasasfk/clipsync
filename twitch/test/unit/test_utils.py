@@ -1,5 +1,5 @@
 import pytest
-import twitch.utils as utils
+import twitch.src.utils as utils
 
 
 def test_extractClipTime():

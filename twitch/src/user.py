@@ -1,4 +1,4 @@
-from twitch.queries import VodInfo
+from twitch.src.queries import VodInfo
 from .clips import TwitchClipService
 from .edge import Edge
 

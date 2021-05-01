@@ -1,4 +1,4 @@
-from twitch.queries import ClipInfo, MultiVodInfo, VodInfo
+from twitch.src.queries import ClipInfo, MultiVodInfo, VodInfo
 
 
 def test_getClipInfo():

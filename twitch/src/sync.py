@@ -1,4 +1,4 @@
-from twitch.queries import MultiVodInfo
+from twitch.src.queries import MultiVodInfo
 from . import utils
 from .user import User
 

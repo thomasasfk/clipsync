@@ -1,8 +1,8 @@
 import datetime
-import twitch.utils as utils
+import twitch.src.utils as utils
 
-from twitch.queries import ClipInfo
-from twitch.sync import Sync
+from twitch.src.queries import ClipInfo
+from twitch.src.sync import Sync
 
 
 def test_syncAll():

@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from multipledispatch import dispatch
 
-from twitch.queries import CreateClipMutation, PublishClipMutation, BroadcasterIDFromVideoID
+from twitch.src.queries import CreateClipMutation, PublishClipMutation, BroadcasterIDFromVideoID
 
 
 class TwitchClipService:

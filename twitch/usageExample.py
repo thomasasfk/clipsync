@@ -1,7 +1,7 @@
 # I DONT KNOW HOW TO PACKAGE MANAGE IN PYTHON
-from twitch.queries import ClipInfo
-import twitch.utils as utils
-from twitch.sync import Sync
+from twitch.src.queries import ClipInfo
+import twitch.src.utils as utils
+from twitch.src.sync import Sync
 
 clipInfo = ClipInfo.post('BreakableMushyKoupreyFutureMan-sO65-B7LjmditMWD')
 vodInterval = utils.clipTime(clipInfo)
