@@ -1,17 +1,13 @@
 # I DONT KNOW HOW TO PACKAGE MANAGE IN PYTHON
-from twitch.queries import ClipInfoQuery
+from twitch.queries import ClipInfo
 import twitch.utils as utils
 from twitch.sync import Sync
 
-clipInfo = ClipInfoQuery.do_post('NaiveEntertainingDotterelRuleFive')
+clipInfo = ClipInfo.post('BreakableMushyKoupreyFutureMan-sO65-B7LjmditMWD')
 vodInterval = utils.clipTime(clipInfo)
 
-newSync = Sync(['xqcow', 'hasanabi', 'tfue'])
-results = newSync.syncAll(vodInterval)
+newSync = Sync(['esfandtv', 'penta', 'ratedepicz', 'kiwo', 'lunaoni'])
+results = newSync.syncAll(vodInterval, "test")
 
 for username, result in results.items():
-    vodId = result[0]
-    seconds = result[1].total_seconds()
-    timestamp = utils.secondsToTimestamp(seconds)
-
-    print(f'{username}: https://twitch.tv/videos/{vodId}?t={timestamp}')
+    print(result)

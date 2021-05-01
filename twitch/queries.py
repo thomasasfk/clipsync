@@ -2,17 +2,25 @@ import requests
 
 from abc import ABC, abstractmethod
 
+DEFAULT_TWITCH_GQL_HEADERS = {'client-id': 'kimne78kx3ncx6brgo4mv6wki5h1ko'}
+CLIP_ACCOUNT_GQL_OAUTH = ''
 
-class AbstractTwitchGQLQuery(ABC):
+
+class AbstractTwitchGQL(ABC):
 
     @property
     @abstractmethod
     def gqlQuery(self):
         """ return the GQL query """
 
+    @property
+    @abstractmethod
+    def headers(self):
+        """ return the GQL query """
+
     @classmethod
-    def do_post(cls):
-        HEADERS = {'client-id': 'kimne78kx3ncx6brgo4mv6wki5h1ko'}
+    def do_post(cls, ):
+        HEADERS = cls.headers
 
         QUERY = {
             'query': cls.gqlQuery,
@@ -23,12 +31,20 @@ class AbstractTwitchGQLQuery(ABC):
             'https://gql.twitch.tv/gql', json=QUERY, headers=HEADERS)
 
         if response.ok:
-            return response.json()['data']
-        else:
-            response.raise_for_status()
+            responseJSON = response.json()
+            return responseJSON.get('data', {})
 
 
-class ClipInfoQuery(AbstractTwitchGQLQuery):
+class UnauthenticatedTwitchGQL(AbstractTwitchGQL, ABC):
+    headers = DEFAULT_TWITCH_GQL_HEADERS
+
+
+class AuthenticatedTwitchGQL(AbstractTwitchGQL, ABC):
+    headers = DEFAULT_TWITCH_GQL_HEADERS
+    headers.update({'Authorization': CLIP_ACCOUNT_GQL_OAUTH})
+
+
+class ClipInfo(UnauthenticatedTwitchGQL):
     gqlQuery = """
     query($slug: ID!) {
         clip(slug: $slug) {
@@ -46,7 +62,7 @@ class ClipInfoQuery(AbstractTwitchGQLQuery):
         return cls.do_post()
 
 
-class MultiVodInfoQuery(AbstractTwitchGQLQuery):
+class MultiVodInfo(UnauthenticatedTwitchGQL):
     gqlQuery = """
     query($logins: [String!]) {
         users(logins: $logins) {
@@ -71,7 +87,7 @@ class MultiVodInfoQuery(AbstractTwitchGQLQuery):
         return cls.do_post()
 
 
-class VodInfoQuery(AbstractTwitchGQLQuery):
+class VodInfo(UnauthenticatedTwitchGQL):
     gqlQuery = """
     query($login: String, $cursor: Cursor) {
         user(login: $login) {
@@ -93,4 +109,64 @@ class VodInfoQuery(AbstractTwitchGQLQuery):
     @classmethod
     def post(cls, login, cursor=None):
         cls.variables = {'login': login, 'cursor': cursor}
+        return cls.do_post()
+
+
+class BroadcasterIDFromVideoID(UnauthenticatedTwitchGQL):
+    gqlQuery = """
+    query($videoID: ID) {
+        video(id: $videoID) {
+            owner {
+                id
+            }
+        }
+    }
+    """
+
+    @classmethod
+    def post(cls, videoID):
+        cls.variables = {'videoID': videoID}
+        return cls.do_post()
+
+
+class CreateClipMutation(AuthenticatedTwitchGQL):
+    gqlQuery = """
+    mutation($broadcasterID: ID!, $videoID: ID, $offsetSeconds: Float!) {
+        createClip(input: {broadcasterID: $broadcasterID, videoID: $videoID, offsetSeconds: $offsetSeconds}) {
+            clip {
+                slug
+            }
+            error {
+                code
+            }
+        }
+    }
+    """
+
+    @classmethod
+    def post(cls, broadcasterID, videoID, offsetSeconds):
+        cls.variables = {'broadcasterID': broadcasterID,
+                         'videoID': videoID,
+                         'offsetSeconds': offsetSeconds}
+        return cls.do_post()
+
+
+class PublishClipMutation(AuthenticatedTwitchGQL):
+    gqlQuery = """
+    mutation($slug: ID!, $title: String) {
+        publishClip(input: {segments: {durationSeconds: 60.0, offsetSeconds: 0.0}, slug: $slug, title: $title}) {
+            clip {
+                slug
+            }
+            error{
+                message
+            }
+        }
+    }
+    """
+
+    @classmethod
+    def post(cls, slug, title):
+        cls.variables = {'slug': slug,
+                         'title': title}
         return cls.do_post()

@@ -2,7 +2,7 @@ import datetime
 
 import pytest
 import twitch.utils as utils
-from twitch.queries import ClipInfoQuery
+from twitch.queries import ClipInfo
 
 from twitch.user import User
 
@@ -11,7 +11,7 @@ from twitch.user import User
                          [('reckful',      ('454177099', datetime.timedelta(seconds=10850))),
                           ('twitchrivals', ('454052840', datetime.timedelta(seconds=28104)))])
 def test_Sync(login, expected):
-    clipInfo = ClipInfoQuery.post('PluckyCreativeAlpacaPicoMause-_o6_deF5l0ADBa21')
+    clipInfo = ClipInfo.post('PluckyCreativeAlpacaPicoMause-_o6_deF5l0ADBa21')
     clipTime = utils.clipTime(clipInfo=clipInfo)
     intervalTime = User(login).sync(clipTime)
 

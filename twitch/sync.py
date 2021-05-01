@@ -1,4 +1,4 @@
-from twitch.queries import MultiVodInfoQuery
+from twitch.queries import MultiVodInfo
 from . import utils
 from .user import User
 
@@ -11,7 +11,7 @@ class Sync():
 
     def setupUsers(self, logins):
         self.users = []
-        data = MultiVodInfoQuery.post(logins=logins)
+        data = MultiVodInfo.post(logins=logins)
 
         for state in data.get('users', []):
             if 'videos' in state:
@@ -19,10 +19,10 @@ class Sync():
                     User(login=state.get('login'),
                          edges=state.get('videos', {}).get('edges', None)))
 
-    def syncAll(self, vodInterval):
+    def syncAll(self, vodInterval, clipTitles=None):
         results = {}
         for user in self.users:
-            newInterval = user.sync(vodInterval)
+            newInterval = user.sync(vodInterval, clipTitles)
             if newInterval:
                 results[user.login] = newInterval
         return results
