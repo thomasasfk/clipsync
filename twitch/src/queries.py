@@ -2,6 +2,8 @@ import requests
 
 from abc import ABC, abstractmethod
 
+TWITCH_TV_GQL_URL = 'https://gql.twitch.tv/gql'
+
 DEFAULT_TWITCH_GQL_HEADERS = {'client-id': 'kimne78kx3ncx6brgo4mv6wki5h1ko'}
 CLIP_ACCOUNT_GQL_OAUTH = ''
 
@@ -33,7 +35,7 @@ class AbstractTwitchGQL(ABC):
         }
 
         response = requests.post(
-            'https://gql.twitch.tv/gql', json=QUERY, headers=HEADERS)
+            TWITCH_TV_GQL_URL, json=QUERY, headers=HEADERS)
 
         if response.ok:
             responseJSON = response.json()
@@ -67,7 +69,7 @@ class ClipInfo(UnauthenticatedTwitchGQL):
         return cls.do_post()
 
 
-class MultiVodInfo(UnauthenticatedTwitchGQL):
+class MultiUserVodsInfo(UnauthenticatedTwitchGQL):
     gqlQuery = """
     query($logins: [String!]) {
         users(logins: $logins) {
@@ -92,7 +94,7 @@ class MultiVodInfo(UnauthenticatedTwitchGQL):
         return cls.do_post()
 
 
-class VodInfo(UnauthenticatedTwitchGQL):
+class UserVodsInfo(UnauthenticatedTwitchGQL):
     gqlQuery = """
     query($login: String, $cursor: Cursor) {
         user(login: $login) {
@@ -115,6 +117,21 @@ class VodInfo(UnauthenticatedTwitchGQL):
     def post(cls, login, cursor=None):
         cls.variables = {'login': login,
                          'cursor': cursor}
+        return cls.do_post()
+
+
+class VodCreatedAt(UnauthenticatedTwitchGQL):
+    gqlQuery = """
+    query($videoID: ID) {
+        video(id: $videoID) {
+            createdAt
+        }
+    }
+    """
+
+    @classmethod
+    def post(cls, login, videoID):
+        cls.variables = {'videoID': videoID}
         return cls.do_post()
 
 

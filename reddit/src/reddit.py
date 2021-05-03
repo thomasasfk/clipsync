@@ -3,10 +3,11 @@ from collections import namedtuple
 import praw
 import yaml
 import pymongo
+import time
 
-from reddit.src.link_validator import validate as valid_link
+from link_validator import validate as hasValidLink
 
-
+POLLING_TIME = 5
 config = yaml.safe_load(open("config.yml"))
 # todo: use database for caching and validating vs existing requests
 # todo: alternate host.docker.internal/localhost based on docker/local
@@ -26,6 +27,7 @@ def init_praw():
 
 
 def handle_comment(comment):
+    print(comment)
     # todo: make this a namedtuple/dataclass and use it
     comment_dict = {
         'id': comment.id,
@@ -37,15 +39,22 @@ def handle_comment(comment):
     # database.comments.insert_one(obj)
 
 
-def is_valid_comment(comment_dict):
-    bot_username = 'u/' + config.get('praw').get('username')
-    if bot_username.lower() not in comment_dict.get('body', '').lower():
+def isValidComment(comment_dict):
+    botUsername = 'u/' + config.get('praw').get('username')
+    if botUsername.lower() not in comment_dict.get('body', '').lower():
         return False
+
+    syncRequest = hasValidLink(comment_dict.get('link_url', ''))
+    if not syncRequest:
+        return False
+
+    intervalTime = syncRequest.retrieveIntervalTime()
+    if not intervalTime:
+        return False
+
 
     # todo: parse/validate usernames specified in the body
 
-    if not valid_link(comment_dict.get('link_url', '')):
-        return False
 
     # todo: use existing chain as just url validation and write logic to retrieve timestamp via requests
 
@@ -54,10 +63,11 @@ if __name__ == "__main__":
     reddit = init_praw()
     subreddits = config.get('subreddits')
     # todo: test that this works with large number of subreddits
-    subreddits_union = "+".join(subreddits)
+    subredditsUnion = "+".join(subreddits)
 
     while True:
-        for comment in reddit.subreddit(subreddits_union).comments(limit=100):
+        for comment in reddit.subreddit(subredditsUnion).comments(limit=100):
             handle_comment(comment)
 
         # todo: handle mentions too?
+        time.sleep(POLLING_TIME)

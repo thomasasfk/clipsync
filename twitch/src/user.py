@@ -1,4 +1,4 @@
-from twitch.src.queries import VodInfo
+from twitch.src.queries import UserVodsInfo
 from .clips import TwitchClipService
 from .edge import Edge
 
@@ -29,7 +29,7 @@ class User():
                 self.cursor = edge.get('cursor')
 
     def paginate(self):
-        data = VodInfo.post(login=self.login, cursor=self.cursor)
+        data = UserVodsInfo.post(login=self.login, cursor=self.cursor)
 
         if data.get('user', None):
             self.setupEdges(data.get('user', {}).get('videos', {}).get('edges', {}))

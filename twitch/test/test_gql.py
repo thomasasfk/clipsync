@@ -1,4 +1,4 @@
-from twitch.src.queries import ClipInfo, MultiVodInfo, VodInfo
+from twitch.src.queries import ClipInfo, MultiUserVodsInfo, UserVodsInfo
 
 
 def test_getClipInfo():
@@ -8,7 +8,7 @@ def test_getClipInfo():
 
 
 def test_getVodInfoMulti():
-    data = MultiVodInfo.post(logins=['xqcow', 'hasanabi'])
+    data = MultiUserVodsInfo.post(logins=['xqcow', 'hasanabi'])
 
     assert len(data['users']) == 2
     assert data['users'][0]['login'] == 'xqcow'
@@ -16,7 +16,7 @@ def test_getVodInfoMulti():
 
 
 def test_getVodInfo():
-    data = VodInfo.post(login='xqcow')
+    data = UserVodsInfo.post(login='xqcow')
 
     assert data['user']['login'] == 'xqcow'
     assert len(data['user']['videos']['edges']) > 0

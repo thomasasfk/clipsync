@@ -1,4 +1,4 @@
-from twitch.src.queries import MultiVodInfo
+from twitch.src.queries import MultiUserVodsInfo
 from . import utils
 from .user import User
 
@@ -11,7 +11,7 @@ class Sync():
 
     def setupUsers(self, logins):
         self.users = []
-        data = MultiVodInfo.post(logins=logins)
+        data = MultiUserVodsInfo.post(logins=logins)
 
         for state in data.get('users', []):
             if 'videos' in state:

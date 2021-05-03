@@ -53,3 +53,17 @@ def test_secondsToTimestampWithZeros(seconds, expectedTimestamp):
 
     assert timestamp == expectedTimestamp
 
+
+@pytest.mark.parametrize('timestamp, expectedSeconds',
+                         [('1h1m1s', 3661),
+                          ('1h1s',   3601),
+                          ('1h1m',   3660),
+                          ('1h',     3600),
+                          ('1m1s',     61),
+                          ('1m',       60),
+                          ('0h0m0s',    0)])
+def test_timestampToSeconds(timestamp, expectedSeconds):
+    timestamp = utils.timestampToSeconds(timestamp)
+
+    assert timestamp == expectedSeconds
+
