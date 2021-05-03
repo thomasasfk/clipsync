@@ -1,10 +1,7 @@
 from abc import abstractmethod, ABC
-from collections import namedtuple
-from urllib.parse import parse_qs
-from urllib.parse import urlparse
 import re
 
-from reddit.src.sync_request import TwitchClipSyncRequest, TwitchVodSyncRequest
+from ..src.syncRequest import TwitchClipSyncRequest, TwitchVodSyncRequest
 from twitch.src.utils import timestampToSeconds
 
 TWITCH_VOD_TIMESTAMP_QUERY_PARAM = 't'

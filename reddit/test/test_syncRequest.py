@@ -1,4 +1,4 @@
-from reddit.src.sync_request import TwitchClipSyncRequest, TwitchVodSyncRequest
+from reddit.src.syncRequest import TwitchClipSyncRequest, TwitchVodSyncRequest
 from twitch.src.queries import ClipInfo, VodCreatedAt
 
 CLIP_INFO_RESPONSE = {'clip': {'video': {'createdAt': '2017-09-12T17:36:46Z'}, 'videoOffsetSeconds': 5452}}
