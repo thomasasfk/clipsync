@@ -19,11 +19,13 @@ def test_Sync(login, expected):
 
     assert intervalTime == expected
 
+
 def test_veryStart():
     clipTime = utils.parseTime('2010-11-27T21:06:12Z')
     intervalTime = User('xqcow').sync(clipTime)
 
-    assert intervalTime == None
+    assert intervalTime is None
+
 
 def test_paginate():
     user = User('reckful')

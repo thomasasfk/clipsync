@@ -30,11 +30,16 @@ class User():
 
     def paginate(self):
         data = UserVodsInfo.post(login=self.login, cursor=self.cursor)
-
+        previousCursor = self.cursor
         if data.get('user', None):
             self.setupEdges(data.get('user', {}).get('videos', {}).get('edges', {}))
+        if self.cursor == previousCursor:
+            self.cursor = None
 
     def sync(self, intervalTime, clipTitle=None):
+        if not self.edges:
+            return None
+
         veryStart = list(self.edges.values())[-1].start
 
         if intervalTime < veryStart:
