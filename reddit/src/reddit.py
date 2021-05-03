@@ -4,17 +4,7 @@ import praw
 import yaml
 import pymongo
 
-from enum import Enum, auto
-
 from reddit.src.link_validator import validate as valid_link
-
-
-# todo: properly use this vs booleans for validating links
-class LinkStatus(Enum):
-    UNSUPPORTED = auto()
-    INVALID = auto()
-    AWAITING_INFO = auto()
-    VALID = auto()
 
 
 config = yaml.safe_load(open("config.yml"))

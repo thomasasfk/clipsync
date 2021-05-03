@@ -1,6 +1,8 @@
+from abc import abstractmethod, ABC
 from collections import namedtuple
 from urllib.parse import parse_qs
 from urllib.parse import urlparse
+import re
 
 TWITCH_VOD_TIMESTAMP_QUERY_PARAM = 't'
 TWITCH_SHORT_VOD_PARAM = '/v/'
@@ -8,6 +10,9 @@ TWITCH_LONG_VOD_PARAM = '/videos/'
 TWITCH_CLIPS_FULL_URL_CLIP_PARAM = '/clip/'
 TWITCH_CLIPS_SU8DOMAIN = 'clips'
 TWITCH_TV_URL = 'twitch.tv'
+
+TWITCH_CLIP_REGEX = re.compile('(?:(?<=twitch.tv\/clip\/)|(?<=clips.twitch.tv\/))[\w\-\_]+(?=\?|$|\n)')
+TWITCH_VOD_REGEX = re.compile('(?:(?<=(?i)\/videos\/)|(?<=(?i)\/v\/))(\d+)(?=\?)|(?<=t\=)(\d+s|\d+m|\d+h)(?=\&|$)')
 
 
 class Validator(object):
@@ -18,89 +23,57 @@ class Validator(object):
         self.next_handler = next_handler
         return next_handler
 
-    def validate(self, l_w_p):
-        return self.next_handler.validate(l_w_p)
+    def validate(self, link):
+        matches = self.matchRegex.findall(link)
+        if self.matchCondition(matches):
+            return self.syncRequest(matches)
+        return self.next_handler.validate(link)
+
+    @property
+    @abstractmethod
+    def matchRegex(self):
+        """ returns a regex for matching """
+
+    @abstractmethod
+    def matchCondition(self, matches):
+        return False
+
+    @abstractmethod
+    def syncRequest(self, matches):
+        """ returns a sync request object """
 
 
 class TwitchClip(Validator):
-    def validate(self, l_w_p):
-        return True if self.__is_valid(l_w_p) else super().validate(l_w_p)
+    matchRegex = TWITCH_CLIP_REGEX
 
-    @staticmethod
-    def __is_valid(l_w_p):
-        if l_w_p.link.hostname != f'{TWITCH_CLIPS_SU8DOMAIN}.{TWITCH_TV_URL}':
-            return False
-        if len(l_w_p.link.path) <= 1:
-            return False
+    def syncRequest(self, matches):
         return True
 
+    def matchCondition(self, matches):
+        return matches
 
-class MobileTwitchClip(Validator):
-    def validate(self, l_w_p):
-        return True if self.__is_valid(l_w_p) else super().validate(l_w_p)
 
-    @staticmethod
-    def __is_valid(l_w_p):
-        if not l_w_p.link.hostname.endswith(TWITCH_TV_URL):
-            return False
-        if not l_w_p.link.path.startswith(TWITCH_CLIPS_FULL_URL_CLIP_PARAM):
-            return False
+class TwitchVod(Validator):
+    matchRegex = TWITCH_VOD_REGEX
+
+    def syncRequest(self, matches):
         return True
 
-
-class TwitchVodShort(Validator):
-    def validate(self, l_w_p):
-        return True if self.__is_valid(l_w_p) else super().validate(l_w_p)
-
-    @staticmethod
-    def __is_valid(l_w_p):
-        if not l_w_p.link.hostname.endswith(TWITCH_TV_URL):
-            return False
-        if l_w_p.params.get(TWITCH_VOD_TIMESTAMP_QUERY_PARAM, None) is None:
-            return False
-        if TWITCH_SHORT_VOD_PARAM not in l_w_p.link.path:
-            return False
-        return True
-
-
-class TwitchVodLong(Validator):
-    def validate(self, l_w_p):
-        return True if self.__is_valid(l_w_p) else super().validate(l_w_p)
-
-    @staticmethod
-    def __is_valid(l_w_p):
-        if not l_w_p.link.hostname.endswith(TWITCH_TV_URL):
-            return False
-        if l_w_p.params.get(TWITCH_VOD_TIMESTAMP_QUERY_PARAM, None) is None:
-            return False
-        if TWITCH_LONG_VOD_PARAM not in l_w_p.link.path:
-            return False
-        return True
+    def matchCondition(self, matches):
+        return len(matches) == 2
 
 
 # todo: logging?
-class ErrorHandler(Validator):
+class ErrorHandler(Validator, ABC):
     def validate(self, req):
         return False
 
 
-LinkWithParams = namedtuple('LinkWithParams', ['link', 'params'])
+validator_chain = TwitchClip()
 
-validator_chain = Validator()
-
-validator_chain.set_next(TwitchClip()) \
-    .set_next(MobileTwitchClip()) \
-    .set_next(TwitchVodShort()) \
-    .set_next(TwitchVodLong()) \
+validator_chain.set_next(TwitchVod()) \
     .set_next(ErrorHandler())
 
 
 def validate(link: str):
-    parsed_link = urlparse(link)
-    if parsed_link.hostname is None:
-        return False
-
-    parsed_params = parse_qs(parsed_link.query)
-
-    u_w_p = LinkWithParams(parsed_link, parsed_params)
-    return validator_chain.validate(u_w_p)
+    return validator_chain.validate(link)

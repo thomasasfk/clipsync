@@ -7,6 +7,7 @@ CLIP_ACCOUNT_GQL_OAUTH = ''
 
 
 class AbstractTwitchGQL(ABC):
+    variables = None
 
     @property
     @abstractmethod
@@ -18,8 +19,12 @@ class AbstractTwitchGQL(ABC):
     def headers(self):
         """ return the GQL query """
 
+    @abstractmethod
+    def post(self, *args):
+        """ implement post method with variables signature """
+
     @classmethod
-    def do_post(cls, ):
+    def do_post(cls):
         HEADERS = cls.headers
 
         QUERY = {
@@ -58,7 +63,7 @@ class ClipInfo(UnauthenticatedTwitchGQL):
 
     @classmethod
     def post(cls, slug):
-        cls.variables = {'slug': slug, }
+        cls.variables = {'slug': slug}
         return cls.do_post()
 
 
@@ -83,7 +88,7 @@ class MultiVodInfo(UnauthenticatedTwitchGQL):
 
     @classmethod
     def post(cls, logins):
-        cls.variables = {'logins': logins, }
+        cls.variables = {'logins': logins}
         return cls.do_post()
 
 
@@ -108,7 +113,8 @@ class VodInfo(UnauthenticatedTwitchGQL):
 
     @classmethod
     def post(cls, login, cursor=None):
-        cls.variables = {'login': login, 'cursor': cursor}
+        cls.variables = {'login': login,
+                         'cursor': cursor}
         return cls.do_post()
 
 

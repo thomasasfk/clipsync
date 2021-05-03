@@ -10,6 +10,7 @@ links = [
     ("https://www.twitch.tv/videos/992654496?sr=a&t=23397s", True),
     ("https://m.twitch.tv/sykkuno/v/992654496?sr=a&t=23397s", True),
     ("https://m.twitch.tv/videos/992654496?sr=a&t=23397s", True),
+    ("https://m.twitch.tv/videos/992654496?t=23397s&", True),
 
     ("https://clips.twitch.com/DepressedEnchantingRabbitMrDestructoid", False),
     ("https://clips.twitch.tv/", False),
@@ -25,4 +26,4 @@ links = [
 @pytest.mark.parametrize("link, is_valid", links)
 def test_link_validator(link, is_valid):
     valid_link = validate(link)
-    assert valid_link == is_valid
+    assert valid_link is not None
