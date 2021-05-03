@@ -1,21 +1,13 @@
 from abc import abstractmethod, ABC
-from collections import namedtuple
-from urllib.parse import parse_qs
-from urllib.parse import urlparse
 import re
 
-from reddit.src.sync_request import TwitchClipSyncRequest, TwitchVodSyncRequest
+from ..src.syncRequest import TwitchClipSyncRequest, TwitchVodSyncRequest
 from twitch.src.utils import timestampToSeconds
 
-TWITCH_VOD_TIMESTAMP_QUERY_PARAM = 't'
-TWITCH_SHORT_VOD_PARAM = '/v/'
-TWITCH_LONG_VOD_PARAM = '/videos/'
-TWITCH_CLIPS_FULL_URL_CLIP_PARAM = '/clip/'
-TWITCH_CLIPS_SU8DOMAIN = 'clips'
-TWITCH_TV_URL = 'twitch.tv'
-
-TWITCH_CLIP_REGEX = re.compile('(?:(?<=twitch.tv\/clip\/)|(?<=clips.twitch.tv\/))[\w\-\_]+(?=\?|$|\n)')
-TWITCH_VOD_REGEX = re.compile('(?:(?<=(?i)\/videos\/)|(?<=(?i)\/v\/))(\d+)(?=\?)|(?<=t\=)(\d+s|\d+m|\d+h)(?=\&|$)')
+TWITCH_CLIP_REGEX = re.compile(r'''(?:(?<=twitch.tv/clip/)|(?<=clips.twitch.tv/))[\w\-_]+(?=\?|$|\n)''',
+                               re.IGNORECASE)
+TWITCH_VOD_REGEX = re.compile(r'''(?:(?<=/videos/)|(?<=/v/))(\d+)(?=\?)|(?<=t=)(\d+s|\d+m|\d+h)(?=&|$)''',
+                              re.IGNORECASE)
 
 
 class Validator(object):

@@ -1,0 +1,12 @@
+praw:
+  username: ""
+  password: ""
+  client_id: ""
+  client_secret: ""
+  user_agent: ""
+
+subreddits:
+  - livestreamfail
+  - rpclipsgta
+  - clipsync
+  - all

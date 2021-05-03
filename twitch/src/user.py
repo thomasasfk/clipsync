@@ -54,10 +54,11 @@ class User():
 
                 if clipTitle:
                     twitchClip = None
+                    vodIntervalOffset = float(vodIntervalOffset.total_seconds())
                     try:
                         clipResponse = TwitchClipService \
                             .instance() \
-                            .createTwitchClip(edge.id, vodIntervalOffset, clipTitle)
+                            .createTwitchClip(videoID=edge.id, offsetSeconds=vodIntervalOffset, title=clipTitle)
                         twitchClip = clipResponse.get('publishClip', {}).get('clip', {}).get('slug', None)
                     except AttributeError:
                         logging.error(f"Error Creating Twitch Clip for: {self.login}")

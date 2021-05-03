@@ -49,9 +49,9 @@ def secondsToTimestamp(time, zeros=False):
     return result if result else '0s'
 
 
-HOURS = re.compile('\d+(?=h)')
-MINUTES = re.compile('\d+(?=m)')
-SECONDS = re.compile('\d+(?=s)')
+HOURS = re.compile(r'\d+(?=h)')
+MINUTES = re.compile(r'\d+(?=m)')
+SECONDS = re.compile(r'\d+(?=s)')
 
 
 def timestampToSeconds(timestamp):
