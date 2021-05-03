@@ -3,6 +3,11 @@ from abc import abstractmethod, ABC
 from twitch.src.queries import ClipInfo, VodCreatedAt
 from twitch.src.utils import findIntervalTime
 
+import logging
+logging.basicConfig(filename='debug.log',
+                    level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
+
 
 class SyncRequest(ABC):
     @abstractmethod
@@ -20,8 +25,8 @@ class TwitchClipSyncRequest(SyncRequest):
             videoOffsetSeconds = clipInfo['clip']['videoOffsetSeconds']
             createdAt = clipInfo['clip']['video']['createdAt']
             return findIntervalTime(videoOffsetSeconds, createdAt)
-        except:
-            return False
+        except Exception as e:
+            logging.error(f"Error retrieving interval time for: {self.slug}, error: {e}")
 
 
 class TwitchVodSyncRequest(SyncRequest):
@@ -30,9 +35,9 @@ class TwitchVodSyncRequest(SyncRequest):
         self.offsetSeconds = offsetSeconds
 
     def retrieveIntervalTime(self):
-        createdAt = VodCreatedAt.post(slug=self.videoID)
+        createdAt = VodCreatedAt.post(videoID=self.videoID)
         try:
             createdAt = createdAt['video']['createdAt']
             return findIntervalTime(self.offsetSeconds, createdAt)
-        except:
-            return False
+        except Exception as e:
+            logging.error(f"Error retrieving interval time for: {self.videoID}, {self.offsetSeconds}s, error: {e}")

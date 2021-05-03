@@ -3,7 +3,6 @@ import requests
 from abc import ABC, abstractmethod
 
 TWITCH_TV_GQL_URL = 'https://gql.twitch.tv/gql'
-
 DEFAULT_TWITCH_GQL_HEADERS = {'client-id': 'kimne78kx3ncx6brgo4mv6wki5h1ko'}
 CLIP_ACCOUNT_GQL_OAUTH = ''
 
@@ -39,7 +38,7 @@ class AbstractTwitchGQL(ABC):
 
         if response.ok:
             responseJSON = response.json()
-            return responseJSON.get('data', {})
+            return responseJSON.get('data', None)
 
 
 class UnauthenticatedTwitchGQL(AbstractTwitchGQL, ABC):
@@ -130,7 +129,7 @@ class VodCreatedAt(UnauthenticatedTwitchGQL):
     """
 
     @classmethod
-    def post(cls, login, videoID):
+    def post(cls, videoID):
         cls.variables = {'videoID': videoID}
         return cls.do_post()
 
