@@ -31,7 +31,7 @@ class Validator(object):
 
     @abstractmethod
     def matchCondition(self, matches):
-        return False
+        """ returns a match condition """""
 
     @abstractmethod
     def syncRequest(self, matches):

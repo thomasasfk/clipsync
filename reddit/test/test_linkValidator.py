@@ -27,14 +27,14 @@ invalidLinks = [
 
 
 @pytest.mark.parametrize("link", validLinks)
-def test_link_validator(link):
+def test_link_validator_valid(link):
     valid_link = validate(link)
     assert valid_link is not None
-    assert isinstance(object, SyncRequest)
+    assert isinstance(valid_link, SyncRequest)
 
 
 @pytest.mark.parametrize("link", invalidLinks)
-def test_link_validator(link):
-    valid_link = validate(link)
-    assert valid_link is False
+def test_link_validator_invalid(link):
+    invalid_link = validate(link)
+    assert invalid_link is False
 

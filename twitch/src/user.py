@@ -3,9 +3,11 @@ from .clips import TwitchClipService
 from .edge import Edge
 
 import logging
+
 logging.basicConfig(filename='debug.log',
                     level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
+
 
 class User():
     def __init__(self, login, edges=None):
@@ -20,9 +22,6 @@ class User():
     def setupEdges(self, edges):
         edges = [edge for edge in edges if edge]
         for edge in edges:
-            if edge['node']['id'] in self.edges:
-                continue
-
             _edge = Edge(edge)
             self.edges[_edge.id] = _edge
             if edge.get('cursor', False):

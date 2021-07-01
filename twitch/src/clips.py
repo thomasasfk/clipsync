@@ -15,8 +15,7 @@ class TwitchClipService:
         createdClip = CreateClipMutation.post(broadcasterID, videoID, offsetSeconds)
         clipSlug = createdClip.get('createClip', {}).get('clip', {}).get('slug', None)
         if clipSlug:
-            publishedClip = PublishClipMutation.post(clipSlug, title)
-            return publishedClip
+            return PublishClipMutation.post(clipSlug, title)
 
     # singleton for handling race condition of ratelimits
     # but the code is so slow it doesn't even matter lmao
