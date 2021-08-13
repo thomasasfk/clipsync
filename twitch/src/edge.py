@@ -1,7 +1,7 @@
 from . import utils
 
 
-class Edge():
+class Edge:
     def __init__(self, edge):
         self.id = edge['node']['id']
         self.start = utils.parseTime(edge['node']['createdAt'])

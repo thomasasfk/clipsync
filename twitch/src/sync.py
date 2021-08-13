@@ -3,14 +3,14 @@ from . import utils
 from .user import User
 
 
-class Sync():
+class Sync:
     def __init__(self, logins):
-        formattedLogins = set([l for l in logins if utils.validLoginFormat(l)])
-        logins = list(formattedLogins)
-        self.setupUsers(logins)
-
-    def setupUsers(self, logins):
         self.users = []
+        formattedLogins = {login for login in logins if utils.validLoginFormat(login)}
+        logins = list(formattedLogins)
+        self.__setupUsers(logins)
+
+    def __setupUsers(self, logins):
         data = MultiUserVodsInfo.post(logins=logins)
 
         for state in data.get('users', []):

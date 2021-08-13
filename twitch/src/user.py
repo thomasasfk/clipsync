@@ -9,17 +9,17 @@ logging.basicConfig(filename='debug.log',
                     format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
 
 
-class User():
+class User:
     def __init__(self, login, edges=None):
         self.login = login
         self.cursor = None
         self.edges = {}
         if edges:
-            self.setupEdges(edges)
+            self.__setupEdges(edges)
         else:
             self.paginate()
 
-    def setupEdges(self, edges):
+    def __setupEdges(self, edges):
         edges = [edge for edge in edges if edge]
         for edge in edges:
             _edge = Edge(edge)
@@ -31,7 +31,7 @@ class User():
         data = UserVodsInfo.post(login=self.login, cursor=self.cursor)
         previousCursor = self.cursor
         if data.get('user', None):
-            self.setupEdges(data.get('user', {}).get('videos', {}).get('edges', {}))
+            self.__setupEdges(data.get('user', {}).get('videos', {}).get('edges', {}))
         if self.cursor == previousCursor:
             self.cursor = None
 
@@ -52,15 +52,11 @@ class User():
                 vodIntervalOffset = intervalTime - edge.start
 
                 if clipTitle:
-                    twitchClip = None
                     vodIntervalOffset = float(vodIntervalOffset.total_seconds())
-                    try:
-                        clipResponse = TwitchClipService \
-                            .instance() \
-                            .createTwitchClip(videoID=edge.id, offsetSeconds=vodIntervalOffset, title=clipTitle)
-                        twitchClip = clipResponse.get('publishClip', {}).get('clip', {}).get('slug', None)
-                    except AttributeError:
-                        logging.error(f"Error Creating Twitch Clip for: {self.login}")
+                    clipResponse = TwitchClipService \
+                        .instance() \
+                        .createTwitchClip(videoID=edge.id, offsetSeconds=vodIntervalOffset, title=clipTitle)
+                    twitchClip = clipResponse.get('publishClip', {}).get('clip', {}).get('slug', None)
 
                     return edge.id, vodIntervalOffset, twitchClip
 

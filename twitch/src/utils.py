@@ -30,7 +30,8 @@ def validLoginFormat(login):
 
 def secondsToTimestamp(time, zeros=False):
     absolute = time < 0
-    if absolute: time = abs(time)
+    if absolute:
+        time = abs(time)
 
     day = time // (24 * 3600)
     time = time % (24 * 3600)
@@ -42,11 +43,19 @@ def secondsToTimestamp(time, zeros=False):
     hour += day * 24
 
     result = '-' if absolute else ''
-    result += '%dh' % hour if hour > 0 else ('0h' if zeros else '')
-    result += '%dm' % minutes if minutes > 0 else ('0m' if zeros else '')
-    result += '%ds' % seconds if seconds > 0 else ('0s' if zeros else '')
+    result = add_timestamp(hour, result, 'h', zeros)
+    result = add_timestamp(minutes, result, 'm', zeros)
+    result = add_timestamp(seconds, result, 's', zeros)
 
-    return result if result else '0s'
+    return result or '0s'
+
+
+def add_timestamp(hms, result, hms_, zeros):
+    if hms > 0:
+        result += f'{hms}{hms_}'
+    elif zeros:
+        result += f'0{hms_}'
+    return result
 
 
 HOURS = re.compile(r'\d+(?=h)')
