@@ -1,5 +1,3 @@
-from collections import namedtuple
-
 import praw
 import yaml
 import pymongo

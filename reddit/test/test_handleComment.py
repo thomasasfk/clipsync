@@ -20,5 +20,3 @@ def test_handleComment():
     assert 'forsen' not in intervalTimes
     assert 'nmplol' not in intervalTimes
     assert intervalTimes == RECKFUL_TWITCH_RIVALS_INTERVAL_TIMES
-
-# todo:  tests are a mess and hitting all real endpoints, better differentiate unit/integration tests
