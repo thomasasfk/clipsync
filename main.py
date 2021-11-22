@@ -36,7 +36,6 @@ if __name__ == "__main__":
 
     # todo: cache these in a database rather than memory
     seenComments = set()
-    seenMentions = set()
 
     while True:
 
@@ -49,18 +48,16 @@ if __name__ == "__main__":
                         reply = handleComment(comment, botUsername)
                     except Exception as e:
                         logging.error(e)
-            if (len(seenComments)) > 2000:
-                seenComments.clear()
 
             for mention in reddit.inbox.mentions(limit=100):
-                if mention.id not in seenMentions:
-                    seenMentions.add(mention.id)
+                if mention.id not in seenComments:
+                    seenComments.add(mention.id)
                     try:
                         reply = handleComment(mention, botUsername)
                     except Exception as e:
                         logging.error(e)
-            if (len(seenMentions)) > 2000:
-                seenMentions.clear()
+            if (len(seenComments)) > 2000:
+                seenComments.clear()
 
             time.sleep(POLLING_TIME)
             print("polling again.")
