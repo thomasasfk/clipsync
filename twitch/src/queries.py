@@ -2,6 +2,7 @@ import requests
 
 from requests.adapters import HTTPAdapter
 from abc import ABC, abstractmethod
+from time import sleep
 
 TWITCH_TV_GQL_URL = 'https://gql.twitch.tv/gql'
 DEFAULT_TWITCH_GQL_HEADERS = {'client-id': 'kimne78kx3ncx6brgo4mv6wki5h1ko'}
@@ -172,11 +173,13 @@ class CreateClipMutation(AuthenticatedTwitchGQL):
     """
 
     @classmethod
-    def post(cls, broadcasterID, videoID, offsetSeconds):
+    def post(cls, broadcasterID, videoID, offsetSeconds, retry=False):
         cls.variables = {'broadcasterID': broadcasterID,
                          'videoID': videoID,
                          'offsetSeconds': offsetSeconds}
-        return cls.do_post()
+        response = cls.do_post()
+        sleep(2.5) # small delay for rate limiting, need to handle this better
+        return response
 
 
 class PublishClipMutation(AuthenticatedTwitchGQL):
@@ -197,4 +200,6 @@ class PublishClipMutation(AuthenticatedTwitchGQL):
     def post(cls, slug, title):
         cls.variables = {'slug': slug,
                          'title': title}
-        return cls.do_post()
+        response = cls.do_post()
+        sleep(2.5) # small delay for rate limiting, need to handle this better
+        return response

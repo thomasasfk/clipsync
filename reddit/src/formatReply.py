@@ -2,7 +2,7 @@ from twitch.src.utils import secondsToTimestamp
 
 
 def formatResult(username, result, hasAnyClips):
-    formattedResult = f"[{username}](https://www.twitch.tv/{username})"
+    formattedResult = f"[{username}](https://www.twitch.tv/{username}/?)"  # question mark is to prevent embed button
     formattedTimestamp = secondsToTimestamp(time=result[1])
     if hasClip(result):
         formattedResult += f" | [Generated Clip](https://clips.twitch.tv/{result[2]})"

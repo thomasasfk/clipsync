@@ -6,8 +6,7 @@ from .user import User
 class Sync:
     def __init__(self, logins):
         self.users = []
-        formattedLogins = {login for login in logins if utils.validLoginFormat(login)}
-        logins = list(formattedLogins)
+        logins = [login for login in logins if utils.validLoginFormat(login)]
         self.__setupUsers(logins)
 
     def __setupUsers(self, logins):

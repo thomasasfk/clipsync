@@ -39,17 +39,25 @@ if __name__ == "__main__":
     seenMentions = set()
 
     while True:
+
         for comment in reddit.subreddit(subredditsUnion).comments(limit=100):
             if comment.id not in seenComments:
                 seenComments.add(comment.id)
-                reply = handleComment(comment, "testsyncclip")
+                try:
+                    reply = handleComment(comment, "testsyncclip")
+                except Exception as e:
+                    logging.error(e)
+
         if (len(seenComments)) > 2000:
             seenComments.clear()
 
         for mention in reddit.inbox.mentions(limit=100):
             if mention.id not in seenMentions:
                 seenMentions.add(mention.id)
-                reply = handleComment(mention, "testsyncclip")
+                try:
+                    reply = handleComment(mention, "testsyncclip")
+                except Exception as e:
+                    logging.error(e)
         if (len(seenMentions)) > 2000:
             seenMentions.clear()
 
