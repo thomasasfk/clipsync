@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from twitch.src.queries import CreateClipMutation, PublishClipMutation, BroadcasterIDFromVideoID
+from time import sleep
 
 
 class TwitchClipService:
@@ -18,6 +19,8 @@ class TwitchClipService:
         clipSlug = createdClip.get('createClip', {}).get('clip', {}).get('slug', None)
         if clipSlug:
             return PublishClipMutation.post(clipSlug, title)
+        else:
+            sleep(2.5)
 
     @classmethod
     def instance(cls) -> TwitchClipService:

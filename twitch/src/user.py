@@ -1,6 +1,7 @@
 from twitch.src.queries import UserVodsInfo
 from .clips import TwitchClipService
 from .edge import Edge
+from time import sleep
 
 import logging
 
@@ -59,6 +60,7 @@ class User:
                             .createTwitchClip(videoID=edge.id, offsetSeconds=vodIntervalOffset, title=clipTitle)
                         twitchClip = clipResponse.get('publishClip', {}).get('clip', {}).get('slug', None)
                     except (TypeError, AttributeError):
+                        sleep(2.5)
                         twitchClip = None
 
                     return edge.id, vodIntervalOffset, twitchClip
