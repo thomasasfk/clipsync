@@ -3,6 +3,8 @@ import yaml
 import time
 import logging
 
+from praw.reddit import Comment
+
 from reddit.src.handleComment import handleComment
 
 logging.basicConfig(filename='debug.log',
@@ -50,7 +52,7 @@ if __name__ == "__main__":
                         logging.error(e)
 
             for mention in reddit.inbox.mentions(limit=100):
-                if mention.id not in seenComments:
+                if mention.id not in seenComments and isinstance(mention, Comment):
                     seenComments.add(mention.id)
                     try:
                         reply = handleComment(mention, botUsername)
@@ -59,6 +61,7 @@ if __name__ == "__main__":
             if (len(seenComments)) > 2000:
                 seenComments.clear()
 
+            print(len(seenComments))
             time.sleep(POLLING_TIME)
             print("polling again.")
 

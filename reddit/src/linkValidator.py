@@ -89,7 +89,11 @@ def validate(comment: Comment) -> SyncRequest:
         link = comment.link_url
         return validateLink(link)
     except AttributeError:
-        pass
+        try:
+            link = comment.submission.url
+            return validateLink(link)
+        except Exception:
+            pass
 
 
 def validateLink(link: str) -> SyncRequest:
