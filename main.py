@@ -40,26 +40,32 @@ if __name__ == "__main__":
 
     while True:
 
-        for comment in reddit.subreddit(subredditsUnion).comments(limit=100):
-            if comment.id not in seenComments:
-                seenComments.add(comment.id)
-                try:
-                    reply = handleComment(comment, "testsyncclip")
-                except Exception as e:
-                    logging.error(e)
+        try:
 
-        if (len(seenComments)) > 2000:
-            seenComments.clear()
+            for comment in reddit.subreddit(subredditsUnion).comments(limit=100):
+                if comment.id not in seenComments:
+                    seenComments.add(comment.id)
+                    try:
+                        reply = handleComment(comment, botUsername)
+                    except Exception as e:
+                        logging.error(e)
 
-        for mention in reddit.inbox.mentions(limit=100):
-            if mention.id not in seenMentions:
-                seenMentions.add(mention.id)
-                try:
-                    reply = handleComment(mention, "testsyncclip")
-                except Exception as e:
-                    logging.error(e)
-        if (len(seenMentions)) > 2000:
-            seenMentions.clear()
+            if (len(seenComments)) > 2000:
+                seenComments.clear()
 
-        time.sleep(POLLING_TIME)
-        print("polling again.")
+            for mention in reddit.inbox.mentions(limit=100):
+                if mention.id not in seenMentions:
+                    seenMentions.add(mention.id)
+                    try:
+                        reply = handleComment(mention, botUsername)
+                    except Exception as e:
+                        logging.error(e)
+            if (len(seenMentions)) > 2000:
+                seenMentions.clear()
+
+            time.sleep(POLLING_TIME)
+            print("polling again.")
+
+        except Exception as e:
+            logging.error(e)
+            pass
