@@ -1,4 +1,4 @@
-praw:
+praw: # https://praw.readthedocs.io/en/stable/getting_started/quick_start.html#authorized-reddit-instances
   username: ""
   password: ""
   client_id: ""
@@ -7,8 +7,9 @@ praw:
 
 twitch:
   gql:
-    OAuth:
-    ClientId: kimne78kx3ncx6brgo4mv6wki5h1ko
+    OAuth: # client facing OAuth token for your twitch account
+    ClientId: kimne78kx3ncx6brgo4mv6wki5h1ko # this is twitch's own client-id
+
 subreddits:
   - livestreamfail
   - rpclipsgta
