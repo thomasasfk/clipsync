@@ -1,19 +1,20 @@
 import re
 
 from datetime import datetime, timedelta
+from typing import Optional, Match
 
 TWITCH_LOGIN = re.compile(r'''[a-zA-Z0-9-_]{1,25}$''')
 
 
-def parseTime(time):
+def parseTime(time) -> datetime:
     return datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
 
 
-def addOffsetToStart(time, videoOffsetSeconds):
+def addOffsetToStart(time, videoOffsetSeconds) -> datetime:
     return time + timedelta(seconds=videoOffsetSeconds)
 
 
-def findIntervalTime(videoOffsetSeconds, createdAt):
+def findIntervalTime(videoOffsetSeconds, createdAt) -> datetime:
     originalVodStart = parseTime(createdAt)
     return addOffsetToStart(originalVodStart, videoOffsetSeconds)
 
@@ -24,11 +25,12 @@ def clipTime(clipInfo):
     return findIntervalTime(videoOffsetSeconds, createdAt)
 
 
-def validLoginFormat(login):
+def validLoginFormat(login) -> Optional[Match[str]]:
     return TWITCH_LOGIN.fullmatch(login)
 
 
-def secondsToTimestamp(time, zeros=False):
+def secondsToTimestamp(time, zeros=False) -> str:
+    time = int(time)
     absolute = time < 0
     if absolute:
         time = abs(time)
@@ -50,7 +52,7 @@ def secondsToTimestamp(time, zeros=False):
     return result or '0s'
 
 
-def add_timestamp(hms, result, hms_, zeros):
+def add_timestamp(hms, result, hms_, zeros) -> str:
     if hms > 0:
         result += f'{hms}{hms_}'
     elif zeros:
@@ -63,7 +65,7 @@ MINUTES = re.compile(r'\d+(?=m)')
 SECONDS = re.compile(r'\d+(?=s)')
 
 
-def timestampToSeconds(timestamp):
+def timestampToSeconds(timestamp) -> int:
     totalSeconds = 0
     hours = HOURS.findall(timestamp)
     for hourStamp in hours:

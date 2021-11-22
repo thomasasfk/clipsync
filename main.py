@@ -1,15 +1,20 @@
 import praw
 import yaml
-import pymongo
 import time
+import logging
 
 from reddit.src.handleComment import handleComment
 
-POLLING_TIME = 5
-# todo: use database for caching and validating vs existing requests
-# todo: alternate host.docker.internal/localhost based on docker/local
-database = pymongo.MongoClient("host.docker.internal", 27017).clipsync
+logging.basicConfig(filename='debug.log',
+                    level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
 
+POLLING_TIME = 5
+
+
+# # todo: use database for caching and validating vs existing requests
+# # todo: alternate host.docker.internal/localhost based on docker/local
+# database = pymongo.MongoClient("host.docker.internal", 27017).clipsync
 
 def init_praw():
     praw_config = config.get('praw')
@@ -30,12 +35,23 @@ if __name__ == "__main__":
     subredditsUnion = "+".join(subreddits)
     botUsername = config.get('praw').get('username')
 
+    seenComments = set()
+    seenMentions = set()
+
     while True:
         for comment in reddit.subreddit(subredditsUnion).comments(limit=100):
-            result = handleComment(comment, botUsername)
-            if result:
-                print(result)
+            if comment.id not in seenComments:
+                seenComments.add(comment.id)
+                reply = handleComment(comment, "testsyncclip")
+        if (len(seenComments)) > 2000:
+            seenComments.clear()
+
+        for mention in reddit.inbox.mentions(limit=100):
+            if mention.id not in seenMentions:
+                seenMentions.add(mention.id)
+                reply = handleComment(mention, "testsyncclip")
+        if (len(seenMentions)) > 2000:
+            seenMentions.clear()
 
         time.sleep(POLLING_TIME)
         print("polling again.")
-        # todo: handle mentions too?

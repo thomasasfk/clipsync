@@ -13,11 +13,16 @@ class Sync:
     def __setupUsers(self, logins):
         data = MultiUserVodsInfo.post(logins=logins)
 
-        for state in data.get('users', []):
-            if 'videos' in state:
-                self.users.append(
-                    User(login=state.get('login'),
-                         edges=state.get('videos', {}).get('edges', None)))
+        for login in logins:
+            for state in data.get('users', []):
+                if (
+                    'login' in state
+                    and login.lower() in state.get('login').lower()
+                    and 'videos' in state
+                ):
+                    self.users.append(
+                        User(login=state.get('login'),
+                             edges=state.get('videos', {}).get('edges', None)))
 
     def syncAll(self, vodInterval, clipTitles=None):
         results = {}

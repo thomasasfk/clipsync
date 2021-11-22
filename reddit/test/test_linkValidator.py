@@ -1,7 +1,7 @@
 import pytest
 
-from reddit.src.linkValidator import validate
-from reddit.src.syncRequest import SyncRequest
+from reddit.src.linkValidator import validateLink
+from reddit.src.syncRequest import SyncRequest, InvalidSyncRequest
 
 validLinks = [
     "https://clips.twitch.tv/DepressedEnchantingRabbitMrDestructoid",
@@ -28,13 +28,13 @@ invalidLinks = [
 
 @pytest.mark.parametrize("link", validLinks)
 def test_link_validator_valid(link):
-    valid_link = validate(link)
+    valid_link = validateLink(link)
     assert valid_link is not None
     assert isinstance(valid_link, SyncRequest)
 
 
 @pytest.mark.parametrize("link", invalidLinks)
 def test_link_validator_invalid(link):
-    invalid_link = validate(link)
-    assert invalid_link is False
+    invalid_link = validateLink(link)
+    assert isinstance(invalid_link, InvalidSyncRequest)
 

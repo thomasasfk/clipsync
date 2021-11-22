@@ -53,10 +53,13 @@ class User:
 
                 if clipTitle:
                     vodIntervalOffset = float(vodIntervalOffset.total_seconds())
-                    clipResponse = TwitchClipService \
-                        .instance() \
-                        .createTwitchClip(videoID=edge.id, offsetSeconds=vodIntervalOffset, title=clipTitle)
-                    twitchClip = clipResponse.get('publishClip', {}).get('clip', {}).get('slug', None)
+                    try:
+                        clipResponse = TwitchClipService \
+                            .instance() \
+                            .createTwitchClip(videoID=edge.id, offsetSeconds=vodIntervalOffset, title=clipTitle)
+                        twitchClip = clipResponse.get('publishClip', {}).get('clip', {}).get('slug', None)
+                    except (TypeError, AttributeError):
+                        twitchClip = None
 
                     return edge.id, vodIntervalOffset, twitchClip
 

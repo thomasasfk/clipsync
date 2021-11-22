@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from twitch.src.queries import CreateClipMutation, PublishClipMutation, BroadcasterIDFromVideoID
 
 
@@ -17,11 +19,8 @@ class TwitchClipService:
         if clipSlug:
             return PublishClipMutation.post(clipSlug, title)
 
-    # singleton for handling race condition of ratelimits
-    # but the code is so slow it doesn't even matter lmao
-    # maybe i'll refactor to use proper sessions in future
     @classmethod
-    def instance(cls):
+    def instance(cls) -> TwitchClipService:
         if cls._instance is None:
             cls._instance = cls.__new__(cls)
         return cls._instance

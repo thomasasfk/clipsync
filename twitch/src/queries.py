@@ -1,10 +1,15 @@
 import requests
 
+from requests.adapters import HTTPAdapter
 from abc import ABC, abstractmethod
 
 TWITCH_TV_GQL_URL = 'https://gql.twitch.tv/gql'
 DEFAULT_TWITCH_GQL_HEADERS = {'client-id': 'kimne78kx3ncx6brgo4mv6wki5h1ko'}
 CLIP_ACCOUNT_GQL_OAUTH = ''
+
+session = requests.Session()
+session.mount('http://gql.twitch.tv/gql', HTTPAdapter(max_retries=5))
+session.mount('https://gql.twitch.tv/gql', HTTPAdapter(max_retries=5))
 
 
 class AbstractTwitchGQL(ABC):
@@ -33,12 +38,12 @@ class AbstractTwitchGQL(ABC):
             'variables': cls.variables,
         }
 
-        response = requests.post(
-            TWITCH_TV_GQL_URL, json=QUERY, headers=HEADERS)
+        response = session.post(
+            TWITCH_TV_GQL_URL, json=QUERY, headers=HEADERS, timeout=5)
 
         if response.ok:
             responseJSON = response.json()
-            return responseJSON.get('data', None)
+            return responseJSON.get('data', {})
 
 
 class UnauthenticatedTwitchGQL(AbstractTwitchGQL, ABC):
@@ -55,6 +60,7 @@ class ClipInfo(UnauthenticatedTwitchGQL):
     query($slug: ID!) {
         clip(slug: $slug) {
             video {
+                id
                 createdAt
             }
             videoOffsetSeconds
