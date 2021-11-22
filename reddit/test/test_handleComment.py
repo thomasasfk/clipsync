@@ -22,8 +22,8 @@ def test_handleComment(mocker):
 
     assert 'Username | Vod' in reply
     assert '-------- | ----' in reply
-    assert "[twitchrivals](https://www.twitch.tv/twitchrivals) | [7h48m24s](https://www.twitch.tv/videos/454052840?t=7h48m24s)" in reply
-    assert "[reckful](https://www.twitch.tv/reckful) | [3h50s](https://www.twitch.tv/videos/454177099?t=3h50s)" in reply
+    assert "[twitchrivals](https://www.twitch.tv/twitchrivals/?) | [7h48m24s](https://www.twitch.tv/videos/454052840?t=7h48m24s)" in reply
+    assert "[reckful](https://www.twitch.tv/reckful/?) | [3h0m50s](https://www.twitch.tv/videos/454177099?t=3h0m50s)" in reply
     assert "[watch via twitchmultivod](https://twitchmultivod.com/#/454177099?t=3h50s/454052840/454177099)" in reply
     assert "^(*This is an automated response* ) ^| ^[Feedback](http://www.reddit.com/message/compose/?to=wee_tommy&subject=Feedback:&message=%5BPost%5D\(https://reddit.com/comments/n46wjz//gwtuoq3/\))" in reply
 

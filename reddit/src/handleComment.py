@@ -1,13 +1,20 @@
+import logging
+
 from praw.models import Comment
 
 from twitch.src.sync import Sync
 from twitch.src.utils import secondsToTimestamp
 from .formatReply import formatResultsTable
-from ..src.linkValidator import validate as isValidLink
+from .syncRequest import InvalidSyncRequest
+from ..src.linkValidator import validate as getSyncRequest
 
 
 FEEDBACK_USERNAME = "wee_tommy"
 REPO_URL = "https://github.com/thomasasfk/clipsync"
+
+logging.basicConfig(filename='debug.log',
+                    level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
 
 
 def handleComment(comment: Comment, botUsername):
@@ -25,16 +32,18 @@ def handleComment(comment: Comment, botUsername):
         if c.author.name == botUsername:
             return
 
-    syncRequest = isValidLink(comment)
-    if not syncRequest:
+    syncRequest = getSyncRequest(comment)
+    if not syncRequest or isinstance(syncRequest, InvalidSyncRequest):
         comment.author.message(f"{botUsernameMention} error",
                                formatError("Invalid link in post for purpose of syncing", comment))
+        logging.error(f"Invalid link in post for purpose of syncing: {getHyperlink(comment)}")
         return
 
     intervalTime = syncRequest.retrieveIntervalTime()
     if not intervalTime:
         comment.author.message(f"{botUsernameMention} error",
                                formatError("Insufficient data to preform sync request", comment))
+        logging.error(f"Insufficient data to preform sync request: {getHyperlink(comment)}")
         return
 
     newSync = Sync(comment.body.split())
@@ -42,6 +51,7 @@ def handleComment(comment: Comment, botUsername):
     if not results:
         comment.author.message(f"{botUsernameMention} error",
                                formatError("No results found with streamers specified", comment))
+        logging.error(f"No results found with streamers specified: {getHyperlink(comment)}")
         return
 
     originalVodDetails = syncRequest.retrieveVodDetails()

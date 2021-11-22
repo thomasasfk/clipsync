@@ -5,10 +5,10 @@ from abc import ABC, abstractmethod
 from time import sleep
 
 TWITCH_TV_GQL_URL = 'https://gql.twitch.tv/gql'
-DEFAULT_TWITCH_GQL_HEADERS = {'client-id': 'kimne78kx3ncx6brgo4mv6wki5h1ko'}
-
 config = safe_load(open('config.yml'))
-CLIP_ACCOUNT_GQL_OAUTH = f'OAuth {config.get("twitch").get("gql").get("OAuth")}'
+
+DEFAULT_TWITCH_CLIENT_ID = config.get("twitch").get("gql").get("ClientId")
+CUSTOM_TWITCH_USER_OAUTH = config.get("twitch").get("gql").get("OAuth")
 
 session = Session()
 session.mount('http://gql.twitch.tv/gql', HTTPAdapter(max_retries=5))
@@ -50,12 +50,16 @@ class AbstractTwitchGQL(ABC):
 
 
 class UnauthenticatedTwitchGQL(AbstractTwitchGQL, ABC):
-    headers = DEFAULT_TWITCH_GQL_HEADERS
+    headers = {
+        'client-id': DEFAULT_TWITCH_CLIENT_ID
+    }
 
 
 class AuthenticatedTwitchGQL(AbstractTwitchGQL, ABC):
-    headers = DEFAULT_TWITCH_GQL_HEADERS
-    headers.update({'Authorization': CLIP_ACCOUNT_GQL_OAUTH})
+    headers = {
+        'Authorization': f'OAuth {CUSTOM_TWITCH_USER_OAUTH}',
+        'client-id': DEFAULT_TWITCH_CLIENT_ID
+    }
 
 
 class ClipInfo(UnauthenticatedTwitchGQL):

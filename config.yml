@@ -8,7 +8,7 @@ praw:
 twitch:
   gql:
     OAuth:
-
+    ClientId: kimne78kx3ncx6brgo4mv6wki5h1ko
 subreddits:
   - livestreamfail
   - rpclipsgta
