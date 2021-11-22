@@ -87,6 +87,6 @@ def getHyperlink(comment):
 def getTwitchMultivodDetails(originalVodDetails, results):
     originalVodTimestamp = secondsToTimestamp(originalVodDetails[1])
     allSyncedVods = "/".join(result[0] for name, result in results.items())
-    return f"\n[watch via twitchmultivod]" \
+    return f"\n\n[watch via twitchmultivod]" \
            f"(https://twitchmultivod.com/#/" \
-           f"{originalVodDetails[0]}?t={originalVodTimestamp}/{allSyncedVods})"
+           f"{originalVodDetails[0]}?t={originalVodTimestamp}/{allSyncedVods})\n"
