@@ -11,7 +11,6 @@ logging.basicConfig(filename='debug.log',
 
 POLLING_TIME = 5
 
-
 # # todo: use database for caching and validating vs existing requests
 # # todo: alternate host.docker.internal/localhost based on docker/local
 # database = pymongo.MongoClient("host.docker.internal", 27017).clipsync
@@ -35,6 +34,7 @@ if __name__ == "__main__":
     subredditsUnion = "+".join(subreddits)
     botUsername = config.get('praw').get('username')
 
+    # todo: cache these in a database rather than memory
     seenComments = set()
     seenMentions = set()
 
@@ -49,7 +49,6 @@ if __name__ == "__main__":
                         reply = handleComment(comment, botUsername)
                     except Exception as e:
                         logging.error(e)
-
             if (len(seenComments)) > 2000:
                 seenComments.clear()
 
@@ -68,4 +67,3 @@ if __name__ == "__main__":
 
         except Exception as e:
             logging.error(e)
-            pass
