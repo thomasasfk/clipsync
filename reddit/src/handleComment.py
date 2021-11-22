@@ -29,7 +29,7 @@ def handleComment(comment: Comment, botUsername):
 
     comment.refresh()
     for c in comment.replies:
-        if c.author.name == botUsername:
+        if c.author.name.lower() == botUsername.lower():
             return
 
     syncRequest = getSyncRequest(comment)
