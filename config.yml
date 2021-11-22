@@ -5,6 +5,10 @@ praw:
   client_secret: ""
   user_agent: ""
 
+twitch:
+  gql:
+    OAuth:
+
 subreddits:
   - livestreamfail
   - rpclipsgta

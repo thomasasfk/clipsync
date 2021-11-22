@@ -1,14 +1,16 @@
-import requests
-
+from requests import Session
+from yaml import safe_load
 from requests.adapters import HTTPAdapter
 from abc import ABC, abstractmethod
 from time import sleep
 
 TWITCH_TV_GQL_URL = 'https://gql.twitch.tv/gql'
 DEFAULT_TWITCH_GQL_HEADERS = {'client-id': 'kimne78kx3ncx6brgo4mv6wki5h1ko'}
-CLIP_ACCOUNT_GQL_OAUTH = ''
 
-session = requests.Session()
+config = safe_load(open('config.yml'))
+CLIP_ACCOUNT_GQL_OAUTH = f'OAuth {config.get("twitch").get("gql").get("OAuth")}'
+
+session = Session()
 session.mount('http://gql.twitch.tv/gql', HTTPAdapter(max_retries=5))
 session.mount('https://gql.twitch.tv/gql', HTTPAdapter(max_retries=5))
 

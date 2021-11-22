@@ -6,6 +6,10 @@ from .formatReply import formatResultsTable
 from ..src.linkValidator import validate as isValidLink
 
 
+FEEDBACK_USERNAME = "wee_tommy"
+REPO_URL = "https://github.com/thomasasfk/clipsync"
+
+
 def handleComment(comment: Comment, botUsername):
     comment.body = comment.body.replace("\\", "")
 
@@ -55,10 +59,14 @@ def formatError(error, comment):
 
 def getFooter(comment):
     hyperlink = getHyperlink(comment)
-    footer = "\n---\n\n^(*This is an automated response* ) ^| "
+    footer = "\n---\n\n^(*This is an automated response* )" \
+             " ^| "
     footer += f"^[Feedback]" \
-              f"(http://www.reddit.com/message/compose/?to=wee_tommy&subject=Feedback:&message=%5BPost%5D" \
-              f"\({hyperlink}\))"
+              f"(http://www.reddit.com/message/compose/?to={FEEDBACK_USERNAME}&subject=Feedback:&message=%5BPost%5D" \
+              f"\({hyperlink}\))" \
+              " ^| "
+    footer += f"^[Source]" \
+              f"({REPO_URL})"
     return footer
 
 
