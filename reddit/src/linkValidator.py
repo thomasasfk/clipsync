@@ -11,7 +11,7 @@ from twitch.src.utils import timestampToSeconds
 
 TWITCH_CLIP_REGEX = re.compile(r'''(?:(?<=twitch.tv/clip/)|(?<=clips.twitch.tv/))[\w\-_]+(?=\?|$|\n)''',
                                re.IGNORECASE)
-TWITCH_VOD_REGEX = re.compile(r'''(?:(?<=/videos/)|(?<=/v/))(\d+)(?=\?)|(?<=t=)(\d+s|\d+m|\d+h)(?=&|$)''',
+TWITCH_VOD_REGEX = re.compile(r'''(?:(?<=/videos/)|(?<=/v/))(\d+)(?=\?)|(?<=t=)(\d+h\d+m\d+s|\d+m\d+s|\d+h\d+s|\d+h\d+m|\d+h|\d+m|\d+s)(?=&|$)''',
                               re.IGNORECASE)
 
 
