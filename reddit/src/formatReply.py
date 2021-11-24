@@ -19,13 +19,12 @@ def hasClip(result):
 def formatResultsTable(results):
     hasAnyClips = any(hasClip(result) for name, result in results.items())
 
-    reply = """
-    Username | Clip | Vod
-    -------- | ---- | ----
-    """ if hasAnyClips else """
-    Username | Vod
-    -------- | ----
-    """
+    reply = """Username | Clip | Vod
+-------- | ---- | ----
+""" if hasAnyClips else """
+Username | Vod
+-------- | ----
+"""
 
     reply += "\n".join(
         formatResult(name, result, hasAnyClips)
