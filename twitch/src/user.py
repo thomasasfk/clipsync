@@ -6,7 +6,7 @@ from time import sleep
 import logging
 
 logging.basicConfig(filename='debug.log',
-                    level=logging.DEBUG,
+                    level=logging.ERROR,
                     format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
 
 

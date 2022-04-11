@@ -1,21 +1,26 @@
-import praw
-import yaml
-import time
 import logging
-
+import time
+import threading
+import queue
+import praw
+import pymongo
+import yaml
 from praw.reddit import Comment
 
 from reddit.src.handleComment import handleComment
 
 logging.basicConfig(filename='debug.log',
-                    level=logging.DEBUG,
+                    level=logging.ERROR,
                     format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
 
-POLLING_TIME = 5
+POLLING_TIME = 10
 
 # # todo: use database for caching and validating vs existing requests
 # # todo: alternate host.docker.internal/localhost based on docker/local
-# database = pymongo.MongoClient("host.docker.internal", 27017).clipsync
+config = yaml.safe_load(open("config.yml"))
+mongodb_src = config.get('mongodb').get('srv')
+database = pymongo.MongoClient(mongodb_src).clipsync
+
 
 def init_praw():
     praw_config = config.get('praw')
@@ -28,42 +33,57 @@ def init_praw():
     )
 
 
+def commentHandleWorker(q, botUsername):
+    while True:
+        aComment = q.get()
+        try:
+            # todo: handle comments, this should just work but its untested
+            print(aComment.id, botUsername)
+            # handleComment(aComment, botUsername)
+        except Exception as e:
+            logging.error(e)
+        finally:
+            q.task_done()
+        time.sleep(0.5)
+
+
 if __name__ == "__main__":
-    config = yaml.safe_load(open("config.yml"))
     reddit = init_praw()
     subreddits = config.get('subreddits')
     # todo: test that this works with large number of subreddits
     subredditsUnion = "+".join(subreddits)
     botUsername = config.get('praw').get('username')
 
-    # todo: cache these in a database rather than memory
-    seenComments = set()
+    q = queue.Queue()
+    threading.Thread(target=commentHandleWorker, args=[q, botUsername], daemon=True).start()
 
     while True:
+        commentsToHandle = []
+        currentlyPolledComments = set()
 
-        try:
+        for mention in reddit.inbox.mentions(limit=20):
+            if mention.id not in currentlyPolledComments and isinstance(mention, Comment):
+                currentlyPolledComments.add(mention.id)
+                commentsToHandle.append(mention)
 
-            for comment in reddit.subreddit(subredditsUnion).comments(limit=100):
-                if comment.id not in seenComments:
-                    seenComments.add(comment.id)
-                    try:
-                        reply = handleComment(comment, botUsername)
-                    except Exception as e:
-                        logging.error(e)
+        for comment in reddit.subreddit(subredditsUnion).comments(limit=50):
+            if comment.id not in currentlyPolledComments:
+                currentlyPolledComments.add(comment.id)
+                commentsToHandle.append(comment)
 
-            for mention in reddit.inbox.mentions(limit=100):
-                if mention.id not in seenComments and isinstance(mention, Comment):
-                    seenComments.add(mention.id)
-                    try:
-                        reply = handleComment(mention, botUsername)
-                    except Exception as e:
-                        logging.error(e)
-            if (len(seenComments)) > 2000:
-                seenComments.clear()
+        previouslyHandledComments = {x['comment_id'] for x in list(database.comments.find({
+            'comment_id': {'$in': list(currentlyPolledComments)}
+        }))}
 
-            print(len(seenComments))
-            time.sleep(POLLING_TIME)
-            print("polling again.")
+        currentCommentsToBeHandled = currentlyPolledComments - previouslyHandledComments
+        commentsToHandle = {comment.id:comment for comment in commentsToHandle if comment.id in currentCommentsToBeHandled}
 
-        except Exception as e:
-            logging.error(e)
+        if currentCommentsToBeHandled:
+            database.comments.insert_many([{'comment_id': x} for x in currentCommentsToBeHandled])
+            print(f"inserted {len(currentCommentsToBeHandled)} comments being handled.")
+
+        for comment_id, comment in commentsToHandle.items():
+            q.put(comment)
+
+        time.sleep(POLLING_TIME)
+        print("polling again.")

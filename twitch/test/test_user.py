@@ -3,9 +3,7 @@ import datetime
 import pytest
 
 from twitch.src import utils as utils
-
-from twitch.src.queries import ClipInfo, BroadcasterIDFromVideoID, CreateClipMutation, PublishClipMutation
-
+from twitch.src.queries import ClipInfo
 from twitch.src.user import User
 
 

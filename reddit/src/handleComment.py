@@ -13,11 +13,11 @@ FEEDBACK_USERNAME = "wee_tommy"
 REPO_URL = "https://github.com/thomasasfk/clipsync"
 
 logging.basicConfig(filename='debug.log',
-                    level=logging.DEBUG,
+                    level=logging.ERROR,
                     format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
 
 
-def handleComment(comment: Comment, botUsername):
+def handleComment(comment: Comment, botUsername: str):
     comment.body = comment.body.replace("\\", "")
 
     if comment.author.name == botUsername:
@@ -47,7 +47,7 @@ def handleComment(comment: Comment, botUsername):
         return
 
     newSync = Sync(comment.body.split())
-    results = newSync.syncAll(intervalTime, f"https://redd.it/{comment.submission.id}")
+    results = newSync.syncAll(intervalTime)
     if not results:
         comment.author.message(f"{botUsernameMention} error",
                                formatError("No results found with streamers specified", comment))
