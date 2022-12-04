@@ -1,6 +1,6 @@
 class REDDIT:
     # config for logging into _reddit, see https://praw.readthedocs.io/en/latest/getting_started/authentication.html
-    USERNAME = "a"
+    USERNAME = ""
     PASSWORD = ""
     CLIENT_ID = ""
     CLIENT_SECRET = ""
