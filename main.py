@@ -1,67 +1,61 @@
-import praw
-import yaml
-import time
 import logging
+import time
 
+import praw
 from praw.reddit import Comment
 
-from reddit.src.handleComment import handleComment
+import config
+from _reddit.handle_comment import handle_comment
 
-logging.basicConfig(filename='debug.log',
-                    level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
+logging.basicConfig(
+    filename="debug.log",
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s",
+)
 
 POLLING_TIME = 5
 
-# # todo: use database for caching and validating vs existing requests
-# # todo: alternate host.docker.internal/localhost based on docker/local
-# database = pymongo.MongoClient("host.docker.internal", 27017).clipsync
 
 def init_praw():
-    praw_config = config.get('praw')
     return praw.Reddit(
-        username=praw_config.get('username'),
-        password=praw_config.get('password'),
-        client_id=praw_config.get('client_id'),
-        client_secret=praw_config.get('client_secret'),
-        user_agent=praw_config.get('user_agent')
+        username=config.REDDIT.USERNAME,
+        password=config.REDDIT.PASSWORD,
+        client_id=config.REDDIT.CLIENT_ID,
+        client_secret=config.REDDIT.CLIENT_SECRET,
+        user_agent=config.REDDIT.USER_AGENT,
     )
 
 
 if __name__ == "__main__":
-    config = yaml.safe_load(open("config.yml"))
     reddit = init_praw()
-    subreddits = config.get('subreddits')
-    # todo: test that this works with large number of subreddits
-    subredditsUnion = "+".join(subreddits)
-    botUsername = config.get('praw').get('username')
 
-    # todo: cache these in a database rather than memory
-    seenComments = set()
+    subreddits_union = "+".join(config.REDDIT.SUBREDDITS)
+
+    seen_comments = set()
 
     while True:
-
         try:
 
-            for comment in reddit.subreddit(subredditsUnion).comments(limit=100):
-                if comment.id not in seenComments:
-                    seenComments.add(comment.id)
+            for comment in reddit.subreddit(subreddits_union).comments(limit=100):
+                if comment.id not in seen_comments:
+                    seen_comments.add(comment.id)
                     try:
-                        reply = handleComment(comment, botUsername)
+                        reply = handle_comment(comment)
                     except Exception as e:
                         logging.error(e)
 
             for mention in reddit.inbox.mentions(limit=100):
-                if mention.id not in seenComments and isinstance(mention, Comment):
-                    seenComments.add(mention.id)
+                if mention.id not in seen_comments and isinstance(mention, Comment):
+                    seen_comments.add(mention.id)
                     try:
-                        reply = handleComment(mention, botUsername)
+                        reply = handle_comment(mention)
                     except Exception as e:
                         logging.error(e)
-            if (len(seenComments)) > 2000:
-                seenComments.clear()
 
-            print(len(seenComments))
+            if (len(seen_comments)) > 2000:
+                seen_comments.clear()
+
+            print(len(seen_comments))
             time.sleep(POLLING_TIME)
             print("polling again.")
 
