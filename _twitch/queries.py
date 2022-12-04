@@ -1,69 +1,70 @@
+import logging
+from abc import ABC
+from abc import abstractmethod
+
 from requests import Session
-from yaml import safe_load
 from requests.adapters import HTTPAdapter
-from abc import ABC, abstractmethod
-from time import sleep
 
-TWITCH_TV_GQL_URL = 'https://gql.twitch.tv/gql'
-config = safe_load(open('config.yml'))
+import config
 
-DEFAULT_TWITCH_CLIENT_ID = config.get("twitch").get("gql").get("ClientId")
-CUSTOM_TWITCH_USER_OAUTH = config.get("twitch").get("gql").get("OAuth")
+DEFAULT_TWITCH_CLIENT_ID = config.TWITCH.CLIENT_ID
+CUSTOM_TWITCH_USER_OAUTH = config.TWITCH.OAUTH
 
 session = Session()
-session.mount('http://gql.twitch.tv/gql', HTTPAdapter(max_retries=5))
-session.mount('https://gql.twitch.tv/gql', HTTPAdapter(max_retries=5))
+session.mount(config.TWITCH.GQL_URL, HTTPAdapter(max_retries=5))
 
 
 class AbstractTwitchGQL(ABC):
-    variables = None
+    @property
+    @abstractmethod
+    def gql_query(self) -> str:
+        """returns a gql query"""
 
     @property
     @abstractmethod
-    def gqlQuery(self):
-        """ return the GQL query """
-
-    @property
-    @abstractmethod
-    def headers(self):
-        """ return the GQL query """
+    def headers(self) -> dict:
+        """returns a dict of headers"""
 
     @abstractmethod
     def post(self, *args):
-        """ implement post method with variables signature """
+        """implement post method with variables signature"""
 
     @classmethod
-    def do_post(cls):
-        HEADERS = cls.headers
-
-        QUERY = {
-            'query': cls.gqlQuery,
-            'variables': cls.variables,
-        }
-
+    def _do_post(cls, variables: dict) -> dict:
         response = session.post(
-            TWITCH_TV_GQL_URL, json=QUERY, headers=HEADERS, timeout=5)
+            config.TWITCH.GQL_URL,
+            json={
+                "query": cls.gql_query,
+                "variables": variables,
+
+            },
+            headers=cls.headers,  # type: ignore
+            timeout=5,
+        )
 
         if response.ok:
-            responseJSON = response.json()
-            return responseJSON.get('data', {})
+            response_json = response.json()
+            return response_json.get("data", {})
+
+        logging.error(
+            f"Error while trying to post to {config.TWITCH.GQL_URL}: {response.text}",
+        )
+        return {}
 
 
 class UnauthenticatedTwitchGQL(AbstractTwitchGQL, ABC):
-    headers = {
-        'client-id': DEFAULT_TWITCH_CLIENT_ID
-    }
+    headers = {"client-id": DEFAULT_TWITCH_CLIENT_ID}
 
 
 class AuthenticatedTwitchGQL(AbstractTwitchGQL, ABC):
     headers = {
-        'Authorization': f'OAuth {CUSTOM_TWITCH_USER_OAUTH}',
-        'client-id': DEFAULT_TWITCH_CLIENT_ID
+        "Authorization": f"OAuth {CUSTOM_TWITCH_USER_OAUTH}",
+        "client-id": DEFAULT_TWITCH_CLIENT_ID,
     }
 
 
-class ClipInfo(UnauthenticatedTwitchGQL):
-    gqlQuery = """
+class ClipInfo(UnauthenticatedTwitchGQL, ABC):
+    gql_query = """
     query($slug: ID!) {
         clip(slug: $slug) {
             video {
@@ -77,12 +78,11 @@ class ClipInfo(UnauthenticatedTwitchGQL):
 
     @classmethod
     def post(cls, slug):
-        cls.variables = {'slug': slug}
-        return cls.do_post()
+        return cls._do_post({"slug": slug})
 
 
-class MultiUserVodsInfo(UnauthenticatedTwitchGQL):
-    gqlQuery = """
+class MultiUserVodsInfo(UnauthenticatedTwitchGQL, ABC):
+    gql_query = """
     query($logins: [String!]) {
         users(logins: $logins) {
             login
@@ -102,12 +102,11 @@ class MultiUserVodsInfo(UnauthenticatedTwitchGQL):
 
     @classmethod
     def post(cls, logins):
-        cls.variables = {'logins': logins}
-        return cls.do_post()
+        return cls._do_post({"logins": logins})
 
 
-class UserVodsInfo(UnauthenticatedTwitchGQL):
-    gqlQuery = """
+class UserVodsInfo(UnauthenticatedTwitchGQL, ABC):
+    gql_query = """
     query($login: String, $cursor: Cursor) {
         user(login: $login) {
             login
@@ -127,13 +126,11 @@ class UserVodsInfo(UnauthenticatedTwitchGQL):
 
     @classmethod
     def post(cls, login, cursor=None):
-        cls.variables = {'login': login,
-                         'cursor': cursor}
-        return cls.do_post()
+        return cls._do_post({"login": login, "cursor": cursor})
 
 
-class VodCreatedAt(UnauthenticatedTwitchGQL):
-    gqlQuery = """
+class VodCreatedAt(UnauthenticatedTwitchGQL, ABC):
+    gql_query = """
     query($videoID: ID) {
         video(id: $videoID) {
             createdAt
@@ -142,13 +139,12 @@ class VodCreatedAt(UnauthenticatedTwitchGQL):
     """
 
     @classmethod
-    def post(cls, videoID):
-        cls.variables = {'videoID': videoID}
-        return cls.do_post()
+    def post(cls, video_id):
+        return cls._do_post({"videoID": video_id})
 
 
-class BroadcasterIDFromVideoID(UnauthenticatedTwitchGQL):
-    gqlQuery = """
+class BroadcasterIDFromVideoID(UnauthenticatedTwitchGQL, ABC):
+    gql_query = """
     query($videoID: ID) {
         video(id: $videoID) {
             owner {
@@ -160,12 +156,11 @@ class BroadcasterIDFromVideoID(UnauthenticatedTwitchGQL):
 
     @classmethod
     def post(cls, videoID):
-        cls.variables = {'videoID': videoID}
-        return cls.do_post()
+        return cls._do_post({"videoID": videoID})
 
 
-class CreateClipMutation(AuthenticatedTwitchGQL):
-    gqlQuery = """
+class CreateClipMutation(AuthenticatedTwitchGQL, ABC):
+    gql_query = """
     mutation($broadcasterID: ID!, $videoID: ID, $offsetSeconds: Float!) {
         createClip(input: {broadcasterID: $broadcasterID, videoID: $videoID, offsetSeconds: $offsetSeconds}) {
             clip {
@@ -180,16 +175,17 @@ class CreateClipMutation(AuthenticatedTwitchGQL):
 
     @classmethod
     def post(cls, broadcasterID, videoID, offsetSeconds, retry=False):
-        cls.variables = {'broadcasterID': broadcasterID,
-                         'videoID': videoID,
-                         'offsetSeconds': offsetSeconds}
-        response = cls.do_post()
-        sleep(2.5) # small delay for rate limiting, need to handle this better
-        return response
+        return cls._do_post(
+            {
+                "broadcasterID": broadcasterID,
+                "videoID": videoID,
+                "offsetSeconds": offsetSeconds,
+            },
+        )
 
 
-class PublishClipMutation(AuthenticatedTwitchGQL):
-    gqlQuery = """
+class PublishClipMutation(AuthenticatedTwitchGQL, ABC):
+    gql_query = """
     mutation($slug: ID!, $title: String) {
         publishClip(input: {segments: {durationSeconds: 60.0, offsetSeconds: 0.0}, slug: $slug, title: $title}) {
             clip {
@@ -204,8 +200,4 @@ class PublishClipMutation(AuthenticatedTwitchGQL):
 
     @classmethod
     def post(cls, slug, title):
-        cls.variables = {'slug': slug,
-                         'title': title}
-        response = cls.do_post()
-        sleep(2.5) # small delay for rate limiting, need to handle this better
-        return response
+        return cls._do_post({"slug": slug, "title": title})
