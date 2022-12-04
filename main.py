@@ -35,20 +35,20 @@ if __name__ == "__main__":
 
     while True:
         try:
+            for mention in reddit.inbox.mentions(limit=100):
+                if mention.id not in seen_comments and isinstance(mention, Comment):
+                    mention.mark_read()
+                    seen_comments.add(mention.id)
+                    try:
+                        reply = handle_comment(mention)
+                    except Exception as e:
+                        logging.error(e)
 
             for comment in reddit.subreddit(subreddits_union).comments(limit=100):
                 if comment.id not in seen_comments:
                     seen_comments.add(comment.id)
                     try:
                         reply = handle_comment(comment)
-                    except Exception as e:
-                        logging.error(e)
-
-            for mention in reddit.inbox.mentions(limit=100):
-                if mention.id not in seen_comments and isinstance(mention, Comment):
-                    seen_comments.add(mention.id)
-                    try:
-                        reply = handle_comment(mention)
                     except Exception as e:
                         logging.error(e)
 
