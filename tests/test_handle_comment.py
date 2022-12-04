@@ -1,13 +1,7 @@
-import pickle
-
 import config
 from _reddit.handle_comment import handle_comment
 from _twitch.sync import Sync
-
-
-def setup_comment():
-    comment_mock = open("testing/comment_mock", "rb")
-    return pickle.load(comment_mock)
+from testing._helpers import setup_comment
 
 
 def test_handle_comment(mocker):
