@@ -1,5 +1,5 @@
 from _twitch import utils
-from _twitch.queries import MultiUserVodsInfo
+from _twitch.queries import multi_user_vods_info
 from _twitch.user import User
 
 
@@ -10,7 +10,7 @@ class Sync:
         self._setup_users(logins)
 
     def _setup_users(self, logins):
-        data = MultiUserVodsInfo.post(logins=logins)
+        data = multi_user_vods_info(logins=logins)
 
         for login in logins:
             for state in data.get("users", []):

@@ -1,9 +1,5 @@
-from __future__ import annotations
-
 import logging
 import re
-from abc import ABC
-from abc import abstractmethod
 
 from praw.reddit import Comment
 
@@ -14,74 +10,69 @@ from _reddit.sync_request import TwitchVodSyncRequest
 from _twitch.utils import timestamp_to_seconds
 
 TWITCH_CLIP_REGEX = re.compile(
-    r"""(?:(?<=twitch\.tv/clip/)|(?<=clips\.twitch\.tv/))([\w\-]+)(?=\?|$|\n)""",
-    re.IGNORECASE,
+    r"""(?:
+        # Match either of the following:
+        # - The string 'twitch.tv/clip/'
+        # - The string 'clips.twitch.tv/'
+        (?<=twitch\.tv/clip/)|(?<=clips\.twitch\.tv/)
+    )
+    # Capture the following group:
+    (
+        # Match one or more word characters or dashes
+        [\w\-]+
+    )
+    # Match either of the following:
+    # - The end of the string
+    # - The character '?'
+    # - A newline character
+    (?=\?|$|\n)""",
+    re.IGNORECASE | re.VERBOSE,
 )
+
 TWITCH_VOD_REGEX = re.compile(
-    r"""twitch\.tv/.*(?:(?<=/v/)|(?<=/videos/))(\d+)(?=\?|$|\n).*?((?:\d+[hms])+)""",
-    re.IGNORECASE,
+    r"""
+        twitch\.tv/.*
+        # Match either of the following:
+        # - The string '/v/'
+        # - The string '/videos/'
+        (?:(?<=/v/)|(?<=/videos/))
+        # Capture the following group:
+        (
+            # Match one or more digits
+            \d+
+        )
+        # Match either of the following:
+        # - The end of the string
+        # - The character '?'
+        # - A newline character
+        (?=\?|$|\n)
+        # Match the following group non-greedily:
+        .*?
+        (
+            (?:
+                # Match one or more digits followed by one of the characters 'h', 'm', or 's'
+                \d+[hms]
+            )+
+        )
+    """,
+    re.IGNORECASE | re.VERBOSE,
 )
 
 
-class Validator(ABC):
-    def __init__(self):
-        self._next_handler = None
-
-    def set_next(self, next_handler: Validator) -> Validator:
-        self._next_handler = next_handler
-        return next_handler
-
-    @abstractmethod
-    def validate(self, link: str) -> SyncRequest:
-        """determines if a link is valid, if valid then it will return a SyncRequest"""
-
-
-class RegexValidator(Validator):
-    def validate(self, link: str) -> SyncRequest:
-        match = self._match_regex.search(link)
-        if match:
-            return self._sync_request(match)
-        return self._next_handler.validate(link)
-
-    @property
-    @abstractmethod
-    def _match_regex(self):
-        """returns a regex for matching"""
-
-    @abstractmethod
-    def _sync_request(self, match: re.Match) -> SyncRequest:
-        """returns a sync request object"""
-
-
-class TwitchClip(RegexValidator):
-    _match_regex = TWITCH_CLIP_REGEX
-
-    def _sync_request(self, match: re.Match) -> TwitchClipSyncRequest:
-        slug = match.group(1)
+def validate_link(link: str) -> SyncRequest:
+    """Validates a link and returns a SyncRequest object."""
+    _match = TWITCH_CLIP_REGEX.search(link)
+    if _match:
+        slug = _match.group(1)
         return TwitchClipSyncRequest(slug)
 
-
-class TwitchVod(RegexValidator):
-    _match_regex = TWITCH_VOD_REGEX
-
-    def _sync_request(self, match: re.Match):
-        video_id, unformatted_timestamp = match.groups()
+    _match = TWITCH_VOD_REGEX.search(link)
+    if _match:
+        video_id, unformatted_timestamp = _match.groups()
         offset_seconds = timestamp_to_seconds(unformatted_timestamp)
         return TwitchVodSyncRequest(video_id, offset_seconds)
 
-
-class ErrorHandler(Validator):
-    def validate(self, link: str) -> InvalidSyncRequest:
-        logging.info(f"Got to end of chain without matching link: {link}")
-        return InvalidSyncRequest()
-
-
-validator_chain = TwitchClip()
-validator_chain.set_next(
-    TwitchVod(),
-).set_next(
-    ErrorHandler(),
-)
+    return InvalidSyncRequest()
 
 
 def get_sync_request(comment: Comment) -> SyncRequest:
@@ -92,7 +83,3 @@ def get_sync_request(comment: Comment) -> SyncRequest:
 
     logging.info("Unable to extract submission or link url from comment")
     return InvalidSyncRequest()
-
-
-def validate_link(link: str) -> SyncRequest:
-    return validator_chain.validate(link)
