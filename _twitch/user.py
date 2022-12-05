@@ -2,7 +2,7 @@ import logging
 
 from _twitch.clips import create_twitch_clip
 from _twitch.edge import Edge
-from _twitch.queries import UserVodsInfo
+from _twitch.queries import user_vods_info
 
 logging.basicConfig(
     filename="debug.log",
@@ -30,7 +30,7 @@ class User:
                 self.cursor = edge.get("cursor")
 
     def paginate(self):
-        data = UserVodsInfo.post(login=self.login, cursor=self.cursor)
+        data = user_vods_info(login=self.login, cursor=self.cursor)
         previous_cursor = self.cursor
         if data.get("user", None):
             self._setup_edges(data.get("user", {}).get("videos", {}).get("edges", {}))

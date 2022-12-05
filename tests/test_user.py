@@ -3,7 +3,7 @@ import datetime
 import pytest
 
 from _twitch import utils as utils
-from _twitch.queries import ClipInfo
+from _twitch.queries import clip_info
 from _twitch.user import User
 
 
@@ -15,8 +15,8 @@ from _twitch.user import User
     ],
 )
 def test_Sync(login, expected):
-    clip_info = ClipInfo.post("PluckyCreativeAlpacaPicoMause-_o6_deF5l0ADBa21")
-    clip_time = utils.clip_time(clip_info=clip_info)
+    clip_info_data = clip_info("PluckyCreativeAlpacaPicoMause-_o6_deF5l0ADBa21")
+    clip_time = utils.clip_time(clip_info=clip_info_data)
     interval_time = User(login).sync(clip_time)
 
     assert interval_time == expected
